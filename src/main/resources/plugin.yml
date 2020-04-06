@@ -1,0 +1,16 @@
+name: RCminiGames
+version: @version@
+main: me.rvt.rcminigames.RCminiGames
+api-version: 1.13
+authors: [RvT]
+description: All RebrovoCraft Minigames at one place
+website: rebrovocraft.info
+depend: [Residence, SidebarAPI]
+commands:
+  maze:
+    description: Commands to enter/exit the Maze
+    usage: /maze exit
+  minigames:
+    description: All MiniGames' commands
+    usage: /minigames
+    aliases: [mg]
