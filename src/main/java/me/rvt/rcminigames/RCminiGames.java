@@ -27,7 +27,7 @@ public final class RCminiGames extends JavaPlugin implements Listener {
     private static Residence res;
     private FileConfiguration config;
     private Maze maze;
-    private List < Object > fighters = new ArrayList < > ();
+    private List < WarZone > fighters = new ArrayList < > ();
 
     @Override
     public void onEnable() {
@@ -83,9 +83,8 @@ public final class RCminiGames extends JavaPlugin implements Listener {
         maze.blocKCommands(e);
 
         if (isInRes(e.getPlayer())) {
-            for (Object o: fighters) {
-                if (((WarZone) o).getPlayer().equals(e.getPlayer().getName()) &&
-                        ((WarZone) o).getTagged()) {
+            for (WarZone f: fighters) {
+                if (f.getPlayer().equals(e.getPlayer().getName()) && f.getTagged()) {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(config.getString("message.prefix") +
                             config.getString("message.inFight"));
@@ -101,18 +100,19 @@ public final class RCminiGames extends JavaPlugin implements Listener {
         ||  e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
             Player p = e.getPlayer();
 
-            getServer().getScheduler().scheduleSyncDelayedTask(JavaPlugin.getProvidingPlugin(RCminiGames.class), () ->
-                    onFighterJoin(p), 1);
+            getServer().getScheduler().scheduleSyncDelayedTask(
+                    JavaPlugin.getProvidingPlugin(RCminiGames.class), () -> onFighterJoin(p), 1);
         }
     }
 
     @EventHandler
     private void onPlayerDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
-        for (Object o: fighters) {
-            if (((WarZone) o).getPlayer().equals(p.getName())) {
-                ((WarZone) o).removeScoreboard();
-                fighters.remove(o);
+        for (WarZone f: fighters) {
+            if (f.getPlayer().equals(p.getName())) {
+
+                Bukkit.getScheduler().runTaskAsynchronously(this, f::decapitate);
+                onFigherLeave(f);
                 return;
             }
         }
@@ -123,9 +123,9 @@ public final class RCminiGames extends JavaPlugin implements Listener {
         Player p = e.getPlayer();
         maze.onPlayerExit(p);
 
-        for (Object o: fighters) {
-            if (((WarZone) o).getPlayer().equals(p.getName()) && ((WarZone) o).getTagged()) {
-                fighters.remove(o);
+        for (WarZone f: fighters) {
+            if (f.getPlayer().equals(p.getName()) && f.getTagged()) {
+                onFigherLeave(f);
                 p.setHealth(0);
                 return;
             }
@@ -139,17 +139,18 @@ public final class RCminiGames extends JavaPlugin implements Listener {
 
             if (e.getDamager() instanceof Player && isInRes((Player) e.getDamager())) {
                 Player attacker = (Player) e.getDamager();
-                for (Object o: fighters) {
-                    if (((WarZone) o).getPlayer().equals(attacker.getName())) {
-                        if (((WarZone) o).getProtected()) {
+                for (WarZone f: fighters) {
+                    if (f.getPlayer().equals(attacker.getName()) ||
+                            f.getPlayer().equals(attacker.getName())) {
+                        if (f.getProtected()) {
                             e.setCancelled(true);
                             return;
                         }
                     }
                 }
-                for (Object o: fighters) {
-                    if (((WarZone) o).getPlayer().equals(victim.getName())) {
-                        ((WarZone) o).setAttacker(attacker.getName());
+                for (WarZone f: fighters) {
+                    if (f.getPlayer().equals(victim.getName())) {
+                        f.setAttacker(attacker.getName());
                         return;
                     }
                 }
@@ -165,21 +166,32 @@ public final class RCminiGames extends JavaPlugin implements Listener {
 
     private void onFighterJoin(Player p) {
         if (isInRes(p)) {
-            fighters.add(new WarZone(p, config, this));
+
+            for(WarZone f:fighters)
+                if(f.getPlayer().equals(p.getName()))
+                    return;
+
+            fighters.add(new WarZone(p, config));
+            fighters.forEach(f -> f.setPlayersIn(fighters.size()));
             if(config.getBoolean("warzone.penalty") && !p.isOp()){
                 p.sendMessage(config.getString("message.prefix") + config.getString("message.warn"));
             }
         } else {
             if (!fighters.isEmpty()) {
-                for (Object o: fighters) {
-                    if (((WarZone) o).getPlayer().equals(p.getName())) {
-                        ((WarZone) o).setProtection(false);
-                        ((WarZone) o).removeScoreboard();
-                        fighters.remove(o);
+                for (WarZone f: fighters) {
+                    if (f.getPlayer().equals(p.getName())) {
+                        f.setProtection(false);
+                        onFigherLeave(f);
                         return;
                     }
                 }
             }
         }
+    }
+
+    private void onFigherLeave(WarZone f){
+        f.stopUpdating();
+        fighters.remove(f);
+        fighters.forEach(fi -> fi.setPlayersIn(fighters.size()));
     }
 }

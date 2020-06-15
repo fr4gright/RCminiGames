@@ -57,6 +57,7 @@ public class ConfigInit {
         config.set("warzone.tagDuration", 15);
         config.set("warzone.penalty", true);
         config.set("warzone.scoreBoardUpdate", 1);
+        config.set("warzone.head-chance", 0.9);
 
         config.set("message.prefix", ChatColor.WHITE + "" + ChatColor.BOLD + "["
                 + ChatColor.AQUA + ChatColor.BOLD + "RC" +  ChatColor.WHITE + ChatColor.BOLD + "]["
@@ -77,8 +78,10 @@ public class ConfigInit {
         config.set("message.fight", ChatColor.RED + "FIGHT!");
 
         config.set("sidebar.title", ChatColor.RED + "" + ChatColor.BOLD + "WarZone");
-        config.set("sidebar.line1", ChatColor.BOLD + "KILLS: " + ChatColor.GREEN + ChatColor.BOLD + "%d");
-        config.set("sidebar.line2", ChatColor.BOLD + "TAGGED: " + ChatColor.GREEN + "" + ChatColor.BOLD + "%d");
-        config.set("sidebar.line3", ChatColor.RED + "" + ChatColor.BOLD + "%s");
+        config.set("sidebar.betweenLines", ChatColor.RED + "-----------");
+        config.set("sidebar.line1", ChatColor.BOLD + "KILLS: " + ChatColor.GREEN + "%d");
+        config.set("sidebar.line2", ChatColor.BOLD + "PLAYERS: " + ChatColor.GREEN + "%d");
+        config.set("sidebar.line3", ChatColor.BOLD + "TAGGED: " + ChatColor.DARK_RED + "" + ChatColor.BOLD + "%d");
+        config.set("sidebar.line4", ChatColor.BOLD + "BY " + ChatColor.DARK_RED + "" + ChatColor.BOLD + "%s");
     }
 }
